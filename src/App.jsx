@@ -2,16 +2,6 @@ import { useEffect, useRef, useState } from 'react'
 import { config } from './config.js'
 import { hasHost, readUrlParams, send, listen } from './bridge.js'
 
-function Toast({ className }) {
-  return (
-    <svg className={className} viewBox="-32 -48 64 84" aria-hidden="true">
-      <path d="M-28 -20 Q-28 -38 -12 -34 Q0 -44 12 -34 Q28 -38 28 -20 L28 24 Q28 32 20 32 L-20 32 Q-28 32 -28 24 Z" fill="#e9b56b" stroke="#a86a2c" strokeWidth="3" />
-      <path d="M-19 -14 Q-19 -27 -8 -24 Q0 -32 8 -24 Q19 -27 19 -14 L19 18 Q19 23 14 23 L-14 23 Q-19 23 -19 18 Z" fill="#c8324a" />
-      <circle cx="-6" cy="-6" r="3" fill="#e8657a" /><circle cx="8" cy="6" r="2.5" fill="#e8657a" />
-    </svg>
-  )
-}
-
 export default function App() {
   const [dev, setDev] = useState(false)
   const [init, setInit] = useState(null)
@@ -47,9 +37,7 @@ export default function App() {
   return (
     <main className="page">
       <section className="hero">
-        <div className="toasts">
-          <Toast className="toast t1" /><Toast className="toast t2" /><Toast className="toast t3" />
-        </div>
+        <img className="ship" src="/navis-actuaria.png" alt="" width="242" height="181" />
         <p className="topic">{config.topic}</p>
         <h1>{config.name}</h1>
         <p className="teaser">{config.teaser}</p>
@@ -61,7 +49,8 @@ export default function App() {
         <button type="button" className="devlink" onClick={() => setDev((d) => !d)} aria-expanded={dev}>
           {dev ? 'Skrýt technické informace' : 'Technické informace'}
         </button>
-        <span className="ver">{config.id} · {config.version}</span>
+        <span className="ver">{config.id} {config.version}</span>
+        <img className="wordmark" src="/actuaria-logo.svg" alt="Actuaria" width="176" height="21" />
       </footer>
 
       {dev && (
