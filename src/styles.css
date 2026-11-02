@@ -74,3 +74,8 @@ pre {
 .log .dir.out { color: var(--teal-deep); }
 .log code { background: #fff; padding: 2px 8px; border-radius: 8px; word-break: break-all; }
 .log .origin { color: var(--ink-soft); }
+.rate { display: flex; align-items: center; gap: 8px; font-size: 15px; color: var(--ink-soft); }
+.rate input {
+  width: 5em; font: inherit; font-size: 16px; padding: 8px 12px; border-radius: 999px;
+  border: 2px solid var(--ink); color: var(--ink);
+}

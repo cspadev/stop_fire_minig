@@ -1,36 +1,45 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { config } from './config.js'
-import { hasHost, readUrlParams, send, listen } from './bridge.js'
+import { isEmbedded, readInit, initFromUrl, sendReady, sendFinish, sendError } from './bridge.js'
+
+// READY goes out once per page load (React StrictMode runs effects twice in dev).
+let readySent = false
 
 export default function App() {
+  const embedded = isEmbedded()
   const [dev, setDev] = useState(false)
-  const [init, setInit] = useState(null)
+  const [init, setInit] = useState(() => (embedded ? null : initFromUrl()))
   const [log, setLog] = useState([])
   const [done, setDone] = useState(false)
-  const started = useRef(Date.now())
-  const urlParams = readUrlParams()
+  const [rate, setRate] = useState('0.8')
 
   const push = (dir, msg, origin) =>
     setLog((l) => [{ t: new Date().toLocaleTimeString('cs-CZ'), dir, msg, origin }, ...l].slice(0, 30))
 
   useEffect(() => {
-    const stop = listen((msg, origin) => {
-      push('in', msg, origin)
-      if (msg.type === 'minigame:init') setInit(msg)
-    })
-    push('out', send('ready', { version: config.version }))
-    return stop
-  }, [])
-
-  const sessionId = init?.sessionId ?? urlParams.sessionId ?? null
+    if (!embedded) return
+    const listener = (e) => {
+      const msg = readInit(e)
+      if (!msg) return
+      push('in', msg, e.origin)
+      // A new INIT starts a new round, even after FINISH.
+      setInit(msg)
+      setDone(false)
+    }
+    window.addEventListener('message', listener)
+    if (!readySent) {
+      readySent = true
+      push('out', sendReady())
+    }
+    return () => window.removeEventListener('message', listener)
+  }, [embedded])
 
   const finish = () => {
-    const score = Math.round(config.maxScore * (0.5 + Math.random() * 0.5))
-    push('out', send('finished', { sessionId, score, maxScore: config.maxScore, durationMs: Date.now() - started.current }))
+    push('out', sendFinish(Number(rate.replace(',', '.')), { placeholder: true, id: config.id }))
     setDone(true)
   }
-  const abort = () => {
-    push('out', send('aborted', { sessionId, reason: 'test' }))
+  const fail = () => {
+    push('out', sendError('INTERNAL', `Placeholder ${config.id}: test error`))
     setDone(true)
   }
 
@@ -58,30 +67,28 @@ export default function App() {
           <div className="devrow">
             <div>
               <h2>Napojení na hlavní hru</h2>
-              <p>{hasHost() ? 'Běží v iframe, host je připojen.' : 'Otevřeno samostatně, bez hosta. Zprávy se jen logují.'}</p>
+              <p>{embedded ? 'Běží v iframe, host je připojen.' : 'Otevřeno samostatně, bez hosta. INIT se bere z URL (?level=2&payload={…}), zprávy se jen logují.'}</p>
             </div>
             <div className="actions">
-              <button type="button" className="primary" onClick={finish}>Dokončit s testovacím skóre</button>
-              <button type="button" onClick={abort}>Přerušit</button>
+              <label className="rate">
+                successRate
+                <input type="text" inputMode="decimal" value={rate} onChange={(e) => setRate(e.target.value)} />
+              </label>
+              <button type="button" className="primary" onClick={finish}>Odeslat FINISH</button>
+              <button type="button" onClick={fail}>Odeslat ERROR</button>
             </div>
           </div>
 
-          <div className="devgrid">
-            <div>
-              <h3>Přijato přes postMessage (minigame:init)</h3>
-              <pre>{init ? JSON.stringify(init, null, 2) : 'zatím nic'}</pre>
-            </div>
-            <div>
-              <h3>Parametry z URL</h3>
-              <pre>{Object.keys(urlParams).length ? JSON.stringify(urlParams, null, 2) : 'žádné'}</pre>
-            </div>
+          <div>
+            <h3>Přijatý INIT{embedded ? '' : ' (z URL)'}</h3>
+            <pre>{init ? JSON.stringify(init, null, 2) : 'zatím nic'}</pre>
           </div>
 
-          <h3>Protokol</h3>
-          <pre>{`host → minihra   minigame:init      { sessionId, playerId, lang, difficulty }
-minihra → host   minigame:ready     { id, version }
-minihra → host   minigame:finished  { id, sessionId, score, maxScore, durationMs }
-minihra → host   minigame:aborted   { id, sessionId, reason }`}</pre>
+          <h3>Protokol (verze 1)</h3>
+          <pre>{`minihra → host   { type: "READY",  version: 1 }
+host → minihra   { type: "INIT",   version?, level?, payload? }
+minihra → host   { type: "FINISH", version: 1, successRate (0–1), succesRate, payload? }
+minihra → host   { type: "ERROR",  version: 1, code, message }`}</pre>
 
           <h3>Log zpráv</h3>
           <ol className="log">
