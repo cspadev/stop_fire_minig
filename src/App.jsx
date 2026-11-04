@@ -50,13 +50,13 @@ export default function App() {
         <p className="topic">{config.topic}</p>
         <h1>{config.name}</h1>
         <p className="teaser">{config.teaser}</p>
-        <p className="status">Minihra se právě staví. Počítáme s ní na {config.expected}.</p>
+        <p className="status">Minihra ještě není hotová, zatím ji nejde hrát.{config.expected && ` Počítáme s ní na ${config.expected}.`}</p>
         {done && <p className="done">Testovací výsledek byl odeslán hlavní hře.</p>}
       </section>
 
       <footer className="foot">
         <button type="button" className="devlink" onClick={() => setDev((d) => !d)} aria-expanded={dev}>
-          {dev ? 'Skrýt technické informace' : 'Technické informace'}
+          {dev ? 'Skrýt informace pro vývojáře' : 'Pro vývojáře'}
         </button>
         <span className="ver">{config.id} {config.version}</span>
         <img className="wordmark" src="/actuaria-logo.svg" alt="Actuaria" width="176" height="21" />

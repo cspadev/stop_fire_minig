@@ -1,18 +1,19 @@
 # Minigame placeholder
 
-Stand-in for a CSpA minigame that is not built yet. Students see "under construction"; the host-game developer can open the technical panel from the footer, see the INIT the host sent, and send a test FINISH or ERROR back. When the real minigame is ready, it replaces this code in the same repo and the URL stays the same.
+Stand-in for a CSpA minigame that is not built yet. Students see "Minihra ještě není hotová" (the game is not finished yet); the host-game developer can open the "Pro vývojáře" panel from the footer, see the INIT the host sent, and send a test FINISH or ERROR back. When the real minigame is ready, it replaces this code in the same repo and the URL stays the same.
 
 ## New minigame from this template
 
-1. Create a repo under the cspadev account. Name it in lowercase with hyphens only
-   (e.g. `stop-fire`): the Vercel project gets the same name and the address
-   `https://<name>.vercel.app` cannot contain underscores.
+1. Create a repo under the cspadev account named exactly as the minigame ID from the
+   Minihry overview (e.g. `0_cafe_mini_atitude`).
 2. Copy this folder into it and edit `src/config.js`: `id`, `name`, `teaser`, `topic`, `expected`.
 3. Commit and push to `main`.
 4. In Vercel (cspadev): Add New → Project → Import the repo. Keep the defaults (framework: Vite).
+   Name the project after the ID in lowercase with hyphens (e.g. `0-cafe-mini-atitude`):
+   the address `https://<project>.vercel.app` cannot contain underscores.
    Once the host's address is known, add the environment variable
    `VITE_ALLOWED_PARENT_ORIGINS=https://<host-domain>` and redeploy.
-5. Send the address to the host-game developer. Every push to `main` redeploys it.
+5. Add the address to the Minihry overview and send it to the host-game developer. Every push to `main` redeploys it.
 
 ## Run locally
 
